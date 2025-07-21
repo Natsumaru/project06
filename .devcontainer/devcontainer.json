@@ -1,0 +1,22 @@
+{
+    "name": "Node.js & TypeScript",
+    // docker-compose.ymlファイルを参照するよう設定
+    "dockerComposeFile": [
+        "../docker-compose.yaml"
+    ],
+    // どのサービスにVS Codeを接続するか指定
+    "service": "app",
+    // コンテナ内の作業フォルダを指定
+    "workspaceFolder": "/workspace",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "Prisma.prisma",
+                "dbaeumer.vscode-eslint",
+                "esbenp.prettier-vscode"
+            ]
+        }
+    },
+    // コンテナ作成後に実行するコマンドはそのまま残す
+    "postCreateCommand": "git config --global user.name 'Natsumaru' && git config --global user.email 'n.natsuki_ar@keio.jp'"
+}

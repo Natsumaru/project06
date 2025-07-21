@@ -1,0 +1,237 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =================================
+//  Enums (選択肢を定義)
+// =================================
+
+enum Sex {
+  MALE
+  FEMALE
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  UNSPECIFIED
+}
+
+enum AgeGroup {
+  TEENS
+  TWENTIES_EARLY
+  TWENTIES_LATE
+  THIRTIES_EARLY
+  THIRTIES_LATE
+  FORTIES
+  FIFTIES_AND_UP
+}
+
+enum EventStatus {
+  PUBLISHED
+  HELD
+  CANCELLED
+}
+
+enum RevealPolicy {
+  OPEN
+  OPTIONAL
+  CONDITIONAL
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
+}
+
+enum RoomType {
+  DM
+  EVENT
+}
+
+// =================================
+//  Models (テーブル定義)
+// =================================
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password  String // パスワードのハッシュ値
+  nickname  String
+  
+  profileImage        String?
+  introduction        String?
+  sex                 Sex         
+  gender              Gender      @default(UNSPECIFIED)
+  ageGroup            AgeGroup?
+
+  isIdentityVerified  Boolean     @default(false)
+  isCertifiedOwner    Boolean     @default(false)
+
+  stripeCustomerId    String?
+  stripeAccountId     String?
+
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  // --- Relations (関連) ---
+  ownedEvents         Event[]     @relation("EventOwner")
+  participations      Participation[]
+  reviews             Review[]
+  sentMessages        ChatMessage[]
+  valueProfiles       ValueProfile[]
+  
+  // フォロー/フォロワー関係
+  following           Follow[]    @relation("Follower")
+  followers           Follow[]    @relation("Following")
+
+  // ブロック関係
+  blockedBy           Block[]     @relation("BlockedUser")
+  blocking            Block[]     @relation("BlockingUser")
+
+  // チャットルームへの参加
+  chatRooms           ChatRoom[]  @relation("ChatRoomParticipants")
+}
+
+model Follow {
+  // フォローした人
+  followerId          String
+  follower            User        @relation("Follower", fields: [followerId], references: [id])
+  
+  // フォローされた人
+  followingId         String
+  following           User        @relation("Following", fields: [followingId], references: [id])
+
+  createdAt           DateTime    @default(now())
+
+  @@id([followerId, followingId]) // 複合主キー
+  @@map("follows")
+}
+
+model Block {
+  // ブロックした人
+  blockerId           String
+  blocker             User        @relation("BlockingUser", fields: [blockerId], references: [id])
+  
+  // ブロックされた人
+  blockedId           String
+  blocked             User        @relation("BlockedUser", fields: [blockedId], references: [id])
+  
+  createdAt           DateTime    @default(now())
+
+  @@id([blockerId, blockedId])
+  @@map("blocks")
+}
+
+model ValueProfile {
+  id            String    @id @default(cuid())
+  questionText  String
+  answerText    String
+
+  user          User      @relation(fields: [userId], references: [id])
+  userId        String
+
+  @@map("value_profiles")
+}
+
+model Event {
+  id              String        @id @default(cuid())
+  title           String
+  description     String
+  eventImage      String?
+  eventDatetime   DateTime
+  locationText    String
+  fee             Int
+  capacity        Int
+  minParticipants Int
+
+  status          EventStatus     @default(PUBLISHED)
+  profileRevealPolicy RevealPolicy @default(OPTIONAL)
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // --- Relations ---
+  owner           User            @relation("EventOwner", fields: [ownerId], references: [id])
+  ownerId         String
+
+  participations  Participation[]
+  reviews         Review[]
+  chatRoom        ChatRoom?
+
+  @@map("events")
+}
+
+model Participation {
+  paymentStatus   PaymentStatus   @default(UNPAID)
+  joinedAt        DateTime        @default(now())
+
+  // --- Relations ---
+  user            User            @relation(fields: [userId], references: [id])
+  userId          String
+  event           Event           @relation(fields: [eventId], references: [id])
+  eventId         String
+
+  @@id([userId, eventId])
+  @@map("participations")
+}
+
+model Review {
+  id              String          @id @default(cuid())
+  rating          Int // 1-5の整数。バリデーションはNestJS側で行う
+  comment         String?
+  
+  createdAt       DateTime        @default(now())
+
+  // --- Relations ---
+  reviewer        User            @relation(fields: [reviewerId], references: [id])
+  reviewerId      String
+  event           Event           @relation(fields: [eventId], references: [id])
+  eventId         String
+
+  @@unique([reviewerId, eventId])
+  @@map("reviews")
+}
+
+model ChatRoom {
+  id              String          @id @default(cuid())
+  roomType        RoomType
+  createdAt       DateTime        @default(now())
+
+  // --- Relations ---
+  // イベントチャットの場合、1つのイベントに紐づく
+  event           Event?          @relation(fields: [eventId], references: [id])
+  eventId         String?         @unique
+
+  // 参加者 (DMなら2人、イベントなら複数人)
+  participants    User[]          @relation("ChatRoomParticipants")
+  messages        ChatMessage[]
+
+  @@map("chat_rooms")
+}
+
+model ChatMessage {
+  id              String          @id @default(cuid())
+  message         String
+  isAnnouncement  Boolean         @default(false)
+  sentAt          DateTime        @default(now())
+
+  // --- Relations ---
+  room            ChatRoom        @relation(fields: [roomId], references: [id])
+  roomId          String
+  sender          User            @relation(fields: [senderId], references: [id])
+  senderId        String
+
+  @@map("chat_messages")
+}
