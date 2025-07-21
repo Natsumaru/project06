@@ -154,7 +154,7 @@ model Event {
   locationText    String
   fee             Int
   capacity        Int
-  minParticipants Int
+  minParticipants Int?
 
   status          EventStatus     @default(PUBLISHED)
   profileRevealPolicy RevealPolicy @default(OPTIONAL)
