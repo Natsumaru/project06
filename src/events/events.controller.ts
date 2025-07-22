@@ -1,4 +1,12 @@
-import { Controller, Post, UseGuards, Body, Get, Query } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseGuards,
+  Body,
+  Get,
+  Query,
+  Param,
+} from '@nestjs/common';
 import { EventsService } from './events.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateEventDto } from './dto/create-event.dto';
@@ -21,5 +29,10 @@ export class EventsController {
   @Get()
   findAll(@Query() query: FindAllEventsDto) {
     return this.eventsService.findAll(query);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.eventsService.findOne(id);
   }
 }
