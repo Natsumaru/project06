@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { FindAllEventsDto } from './dto/find-all-events.dto';
@@ -9,6 +13,14 @@ export class EventsService {
   constructor(private readonly prisma: PrismaService) {}
 
   create(createEventDto: CreateEventDto, ownerId: string) {
+    // 過去の日時のイベントは作成できない
+    const eventDate = new Date(createEventDto.eventDatetime);
+    if (eventDate < new Date()) {
+      throw new BadRequestException(
+        'You cannot create an event with a past date and time.',
+      );
+    }
+
     return this.prisma.event.create({
       data: {
         ...createEventDto,
@@ -82,5 +94,65 @@ export class EventsService {
       throw new NotFoundException(`Event with ID ${id} not found`);
     }
     return event;
+  }
+
+  async join(eventId: string, userId: string) {
+    return this.prisma.$transaction(async (prisma) => {
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        include: {
+          _count: {
+            select: {
+              participations: true,
+            },
+          },
+        },
+      });
+      // イベントの存在チェック
+      if (!event) {
+        throw new NotFoundException(`Event with ID ${eventId} not found`);
+      }
+
+      // 定員チェック
+      if (event.capacity <= event._count.participations) {
+        throw new BadRequestException('This event has reached its capacity');
+      }
+
+      // 参加済みチェック
+      const exisringParticipation = await prisma.participation.findUnique({
+        where: {
+          userId_eventId: {
+            userId,
+            eventId,
+          },
+        },
+      });
+      if (exisringParticipation) {
+        throw new BadRequestException(
+          `You are already participating in the event with ID ${eventId}.`,
+        );
+      }
+      // オーナーは参加できない
+      if (event.ownerId === userId) {
+        throw new BadRequestException(
+          `You cannot join your own event with ID ${eventId}, because you are the owner.`,
+        );
+      }
+
+      // 過去のイベントへの参加はできない
+      if (event.eventDatetime < new Date()) {
+        throw new BadRequestException(
+          `You cannot join the past event with ID ${eventId}.`,
+        );
+      }
+
+      return prisma.participation.create({
+        data: {
+          eventId,
+          userId,
+          paymentStatus: 'UNPAID', // ここでは支払いを簡略化しているので後々追加する
+        },
+      });
+    });
   }
 }

@@ -35,4 +35,13 @@ export class EventsController {
   findOne(@Param('id') id: string) {
     return this.eventsService.findOne(id);
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post(':id/join')
+  join(
+    @Param('id') eventId: string,
+    @GetUser() user: { id: string; email: string },
+  ) {
+    return this.eventsService.join(eventId, user.id);
+  }
 }
