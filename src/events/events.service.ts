@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -7,6 +8,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { FindAllEventsDto } from './dto/find-all-events.dto';
 import { Prisma } from '@prisma/client';
+import { UpdateEventDto } from './dto/update-event.dto';
 
 @Injectable()
 export class EventsService {
@@ -154,5 +156,57 @@ export class EventsService {
         },
       });
     });
+  }
+
+  async update(
+    eventId: string,
+    userId: string,
+    updateEventDto: UpdateEventDto,
+  ) {
+    const event = await this.findOne(eventId);
+
+    if (event.ownerId !== userId) {
+      throw new ForbiddenException(
+        `You cannot update the event with ID ${eventId}, because you are not the owner.`,
+      );
+    }
+
+    // 過去のイベントは更新できない
+    if (event.eventDatetime < new Date()) {
+      throw new BadRequestException(
+        `You cannot update the past event with ID ${eventId}.`,
+      );
+    }
+
+    // 更新時の日付が過去の日時でないかチェック
+    if (updateEventDto.eventDatetime) {
+      const newEventDate = new Date(updateEventDto.eventDatetime);
+      if (newEventDate < new Date()) {
+        throw new BadRequestException(
+          'You cannot update an event with a past date and time.',
+        );
+      }
+    }
+
+    return this.prisma.event.update({
+      where: { id: eventId },
+      data: updateEventDto,
+    });
+  }
+
+  async remove(eventId: string, userId: string) {
+    const event = await this.findOne(eventId);
+
+    if (event.ownerId !== userId) {
+      throw new ForbiddenException(
+        `You cannot delete the event with ID ${eventId}, because you are not the owner.`,
+      );
+    }
+
+    await this.prisma.event.delete({
+      where: { id: eventId },
+    });
+
+    return;
   }
 }

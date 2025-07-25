@@ -6,12 +6,17 @@ import {
   Get,
   Query,
   Param,
+  Patch,
+  Delete,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateEventDto } from './dto/create-event.dto';
 import { FindAllEventsDto } from './dto/find-all-events.dto';
 import { GetUser } from '../auth/decorator/get-user.decorator';
+import { UpdateEventDto } from './dto/update-event.dto';
 
 @Controller('events')
 export class EventsController {
@@ -43,5 +48,22 @@ export class EventsController {
     @GetUser() user: { id: string; email: string },
   ) {
     return this.eventsService.join(eventId, user.id);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch(':id')
+  update(
+    @Param('id') eventId: string,
+    @GetUser() user: { id: string },
+    @Body() updateEventDto: UpdateEventDto,
+  ) {
+    return this.eventsService.update(eventId, user.id, updateEventDto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param('id') eventId: string, @GetUser() user: { id: string }) {
+    return this.eventsService.remove(eventId, user.id);
   }
 }
