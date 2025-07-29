@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SubmitAnswersDto } from './dto/submit-answers.dto';
 
@@ -21,6 +21,21 @@ export class QuestionsService {
   // ユーザーの回答を登録・更新
   async submitAnswers(userId: string, submitAnswersDto: SubmitAnswersDto) {
     const { answers } = submitAnswersDto;
+
+    // 各回答の質問IDと選択肢IDが関連しているかをチェック
+    for (const answer of answers) {
+      const choice = await this.prisma.choice.findFirst({
+        where: {
+          id: answer.choiceId,
+          questionId: answer.questionId,
+        },
+      });
+      if (!choice) {
+        throw new BadRequestException(
+          `Choice  ${answer.choiceId} does not belong to question ${answer.questionId}`,
+        );
+      }
+    }
 
     const upsertPromises = answers.map((answer) =>
       this.prisma.answer.upsert({
