@@ -30,11 +30,11 @@ export class QuestionsService {
             questionId: answer.questionId,
           },
         },
-        update: { choiceId: answer.chocedId },
+        update: { choiceId: answer.choiceId },
         create: {
           userId,
           questionId: answer.questionId,
-          choiceId: answer.chocedId,
+          choiceId: answer.choiceId,
         },
       }),
     );

@@ -6,7 +6,7 @@ class AnswerDto {
   questionId: string;
 
   @IsString()
-  chocedId: string;
+  choiceId: string;
 }
 
 export class SubmitAnswersDto {
