@@ -91,7 +91,6 @@ model User {
   participations Participation[]
   reviews        Review[]
   sentMessages   ChatMessage[]
-  valueProfiles  ValueProfile[]
 
   // フォロー/フォロワー関係
   following Follow[] @relation("Follower")
@@ -133,17 +132,6 @@ model Block {
 
   @@id([blockerId, blockedId])
   @@map("blocks")
-}
-
-model ValueProfile {
-  id           String @id @default(cuid())
-  questionText String
-  answerText   String
-
-  user   User   @relation(fields: [userId], references: [id])
-  userId String
-
-  @@map("value_profiles")
 }
 
 model Event {
