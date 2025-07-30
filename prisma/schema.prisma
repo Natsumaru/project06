@@ -57,7 +57,8 @@ enum PaymentStatus {
 
 enum RoomType {
   DM
-  EVENT
+  PRE_JOIN
+  POST_JOIN
 }
 
 // =================================
@@ -102,6 +103,7 @@ model User {
 
   // チャットルームへの参加
   chatRooms ChatRoom[] @relation("ChatRoomParticipants")
+  preJoinParticipations PreJoinChatParticipant[]
 }
 
 model Follow {
@@ -157,7 +159,11 @@ model Event {
 
   participations Participation[]
   reviews        Review[]
-  chatRoom       ChatRoom?
+
+  preJoinChatRoomId String? @unique
+  postJoinChatRoomId String? @unique
+  preJoinChatRoom ChatRoom? @relation("PreJoinEvent",fields: [preJoinChatRoomId], references: [id])
+  postJoinChatRoom ChatRoom? @relation("PostJoinEvent",fields: [postJoinChatRoomId], references: [id])
 
   @@map("events")
 }
@@ -200,8 +206,11 @@ model ChatRoom {
 
   // --- Relations ---
   // イベントチャットの場合、1つのイベントに紐づく
-  event   Event?  @relation(fields: [eventId], references: [id])
-  eventId String? @unique
+  preJoinEvent Event? @relation("PreJoinEvent")
+  postJoinEvent Event? @relation("PostJoinEvent")
+
+  // 参加前チャットの匿名参加者情報
+  anonymousParticipants PreJoinChatParticipant[]
 
   // 参加者 (DMなら2人、イベントなら複数人)
   participants User[]        @relation("ChatRoomParticipants")
@@ -223,6 +232,15 @@ model ChatMessage {
   senderId String
 
   @@map("chat_messages")
+}
+
+model PreJoinChatParticipant {
+  id       String   @id @default(cuid())
+  anonymousName String
+  user User @relation(fields: [userId], references: [id])
+  userId   String
+  chatRoom ChatRoom @relation(fields: [chatRoomId], references: [id])
+  chatRoomId String
 }
 
 model Question {
