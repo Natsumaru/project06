@@ -14,7 +14,7 @@ import { UpdateEventDto } from './dto/update-event.dto';
 export class EventsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(createEventDto: CreateEventDto, ownerId: string) {
+  async create(createEventDto: CreateEventDto, ownerId: string) {
     // 過去の日時のイベントは作成できない
     const eventDate = new Date(createEventDto.eventDatetime);
     if (eventDate < new Date()) {
@@ -23,13 +23,36 @@ export class EventsService {
       );
     }
 
-    return this.prisma.event.create({
-      data: {
-        ...createEventDto,
-        owner: {
-          connect: { id: ownerId },
+    return this.prisma.$transaction(async (prisma) => {
+      // プレ参加チャットルームを作成
+      const preJoinChatRoom = await prisma.chatRoom.create({
+        data: {
+          roomType: 'PRE_JOIN',
         },
-      },
+      });
+
+      // ポスト参加チャットルームを作成
+      const postJoinChatRoom = await prisma.chatRoom.create({
+        data: {
+          roomType: 'POST_JOIN',
+        },
+      });
+
+      // イベントを作成し、チャットルームと関連付け
+      return prisma.event.create({
+        data: {
+          ...createEventDto,
+          owner: {
+            connect: { id: ownerId },
+          },
+          preJoinChatRoom: {
+            connect: { id: preJoinChatRoom.id },
+          },
+          postJoinChatRoom: {
+            connect: { id: postJoinChatRoom.id },
+          },
+        },
+      });
     });
   }
 
