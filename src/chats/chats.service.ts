@@ -328,6 +328,41 @@ export class ChatsService {
     };
   }
 
+  async togglePinMessage(messageId: string, userId: string) {
+    const message = await this.prisma.chatMessage.findUnique({
+      where: { id: messageId },
+      include: {
+        room: {
+          select: {
+            preJoinEvent: { select: { owner: { select: { id: true } } } },
+            postJoinEvent: { select: { owner: { select: { id: true } } } },
+          },
+        },
+      },
+    });
+
+    if (!message) {
+      throw new NotFoundException('Message not found');
+    }
+
+    // オーナーかチェック
+    const ownerId =
+      message.room.preJoinEvent?.owner?.id ||
+      message.room.postJoinEvent?.owner?.id;
+    if (ownerId !== userId) {
+      throw new ForbiddenException(
+        'You do not have permission to pin this message.',
+      );
+    }
+
+    return this.prisma.chatMessage.update({
+      where: { id: messageId },
+      data: {
+        isPinned: !message.isPinned, // トグル
+      },
+    });
+  }
+
   // ユーザーがチャットルームにアクセセスする権利があるかを確認する共通メソッド
   async checkUserAccessToRoom(roomId: string, userId: string) {
     const room = await this.prisma.chatRoom.findUnique({

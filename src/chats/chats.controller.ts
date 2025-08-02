@@ -35,4 +35,13 @@ export class ChatsController {
   ) {
     return this.chatsService.findMessages(roomId, user.id, query);
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('message/:messageId/pin')
+  togglePin(
+    @Param('messageId') messageId: string,
+    @GetUser() user: { id: string },
+  ) {
+    return this.chatsService.togglePinMessage(messageId, user.id);
+  }
 }
