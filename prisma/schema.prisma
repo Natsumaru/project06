@@ -241,6 +241,8 @@ model PreJoinChatParticipant {
   userId   String
   chatRoom ChatRoom @relation(fields: [chatRoomId], references: [id])
   chatRoomId String
+
+  @@unique([userId, chatRoomId])
 }
 
 model Question {

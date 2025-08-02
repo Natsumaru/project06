@@ -39,7 +39,7 @@ export class EventsService {
       });
 
       // イベントを作成し、チャットルームと関連付け
-      return prisma.event.create({
+      const event = await prisma.event.create({
         data: {
           ...createEventDto,
           owner: {
@@ -53,6 +53,18 @@ export class EventsService {
           },
         },
       });
+
+      // イベントオーナーをPOST_JOINチャットルームに追加
+      await prisma.chatRoom.update({
+        where: { id: postJoinChatRoom.id },
+        data: {
+          participants: {
+            connect: { id: ownerId },
+          },
+        },
+      });
+
+      return event;
     });
   }
 
@@ -131,6 +143,7 @@ export class EventsService {
               participations: true,
             },
           },
+          postJoinChatRoom: true, // POST_JOINチャットルーム情報を取得
         },
       });
       // イベントの存在チェック
@@ -171,13 +184,28 @@ export class EventsService {
         );
       }
 
-      return prisma.participation.create({
+      // 参加記録を作成
+      const participation = await prisma.participation.create({
         data: {
           eventId,
           userId,
           paymentStatus: 'UNPAID', // ここでは支払いを簡略化しているので後々追加する
         },
       });
+
+      // POST_JOINチャットルームに参加者を追加
+      if (event.postJoinChatRoom) {
+        await prisma.chatRoom.update({
+          where: { id: event.postJoinChatRoom.id },
+          data: {
+            participants: {
+              connect: { id: userId },
+            },
+          },
+        });
+      }
+
+      return participation;
     });
   }
 

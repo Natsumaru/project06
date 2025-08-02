@@ -10,7 +10,14 @@ import { QuestionsModule } from './questions/questions.module';
 import { ChatsModule } from './chats/chats.module';
 
 @Module({
-  imports: [UsersModule, PrismaModule, AuthModule, EventsModule, QuestionsModule, ChatsModule],
+  imports: [
+    UsersModule,
+    PrismaModule,
+    AuthModule,
+    EventsModule,
+    QuestionsModule,
+    ChatsModule,
+  ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
