@@ -274,6 +274,7 @@ export class ChatsService {
           return {
             ...message,
             isMyMessage,
+            isPinned: message.isPinned,
             sender: {
               id: ownerInfo.id,
               nickname: ownerInfo.nickname,
@@ -291,6 +292,7 @@ export class ChatsService {
             sentAt: message.sentAt,
             roomId: message.roomId,
             isMyMessage,
+            isPinned: message.isPinned,
             sender: {
               id: 'anonymous',
               nickname: anonymousName,
@@ -304,6 +306,7 @@ export class ChatsService {
       processedMessages = messages.map((message) => ({
         ...message,
         isMyMessage: message.senderId === userId,
+        isPinned: message.isPinned,
         sender: {
           ...message.sender,
           isOwner: message.senderId === ownerId,
