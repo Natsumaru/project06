@@ -260,4 +260,74 @@ export class EventsService {
 
     return;
   }
+
+  async leave(eventId: string, userId: string) {
+    return this.prisma.$transaction(async (prisma) => {
+      // イベントの存在チェック
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        include: {
+          postJoinChatRoom: true,
+        },
+      });
+
+      if (!event) {
+        throw new NotFoundException(`Event with ID ${eventId} not found`);
+      }
+
+      // 参加済みチェック
+      const participation = await prisma.participation.findUnique({
+        where: {
+          userId_eventId: {
+            userId,
+            eventId,
+          },
+        },
+      });
+
+      if (!participation) {
+        throw new BadRequestException(
+          `You are not participating in the event with ID ${eventId}.`,
+        );
+      }
+
+      // オーナーは退会できない
+      if (event.ownerId === userId) {
+        throw new BadRequestException(
+          `You cannot leave your own event with ID ${eventId}, because you are the owner.`,
+        );
+      }
+
+      // 過去のイベントからは退会できない
+      if (event.eventDatetime < new Date()) {
+        throw new BadRequestException(
+          `You cannot leave the past event with ID ${eventId}.`,
+        );
+      }
+
+      // 参加記録を削除
+      await prisma.participation.delete({
+        where: {
+          userId_eventId: {
+            userId,
+            eventId,
+          },
+        },
+      });
+
+      // POST_JOINチャットルームから参加者を削除
+      if (event.postJoinChatRoom) {
+        await prisma.chatRoom.update({
+          where: { id: event.postJoinChatRoom.id },
+          data: {
+            participants: {
+              disconnect: { id: userId },
+            },
+          },
+        });
+      }
+
+      return { message: 'Successfully left the event' };
+    });
+  }
 }

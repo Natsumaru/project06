@@ -410,4 +410,36 @@ export class EventsController {
   remove(@Param('id') eventId: string, @GetUser() user: { id: string }) {
     return this.eventsService.remove(eventId, user.id);
   }
+
+  @ApiOperation({ summary: 'イベント退会' })
+  @ApiBearerAuth()
+  @ApiParam({ name: 'id', description: 'イベントID' })
+  @ApiResponse({
+    status: 200,
+    description: 'イベント退会成功',
+    schema: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          description: '退会成功メッセージ',
+          example: 'Successfully left the event',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: '認証が必要' })
+  @ApiResponse({ status: 404, description: 'イベントが見つかりません' })
+  @ApiResponse({
+    status: 400,
+    description: '参加していない、オーナーは退会不可、または過去のイベント',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @Delete(':id/leave')
+  leave(
+    @Param('id') eventId: string,
+    @GetUser() user: { id: string; email: string },
+  ) {
+    return this.eventsService.leave(eventId, user.id);
+  }
 }
