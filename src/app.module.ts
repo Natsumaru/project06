@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { EventsModule } from './events/events.module';
 import { QuestionsModule } from './questions/questions.module';
 import { ChatsModule } from './chats/chats.module';
+import { DmsModule } from './dms/dms.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ChatsModule } from './chats/chats.module';
     EventsModule,
     QuestionsModule,
     ChatsModule,
+    DmsModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
