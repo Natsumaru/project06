@@ -33,7 +33,7 @@ export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
   @ApiOperation({ summary: 'イベント作成' })
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT')
   @ApiBody({ type: CreateEventDto })
   @ApiResponse({
     status: 201,
@@ -274,7 +274,7 @@ export class EventsController {
   }
 
   @ApiOperation({ summary: 'イベント参加' })
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT')
   @ApiParam({ name: 'id', description: 'イベントID' })
   @ApiResponse({
     status: 201,
@@ -313,7 +313,7 @@ export class EventsController {
   }
 
   @ApiOperation({ summary: 'イベント更新' })
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT')
   @ApiParam({ name: 'id', description: 'イベントID' })
   @ApiBody({
     type: UpdateEventDto,
@@ -398,7 +398,7 @@ export class EventsController {
   }
 
   @ApiOperation({ summary: 'イベント削除' })
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT')
   @ApiParam({ name: 'id', description: 'イベントID' })
   @ApiResponse({ status: 204, description: 'イベント削除成功' })
   @ApiResponse({ status: 401, description: '認証が必要' })

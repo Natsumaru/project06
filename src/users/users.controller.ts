@@ -43,7 +43,7 @@ export class UsersController {
   }
 
   @ApiOperation({ summary: 'ユーザープロフィール取得' })
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT')
   @ApiResponse({
     status: 200,
     description: 'プロフィール取得成功',
