@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -8,6 +13,7 @@ import * as crypto from 'crypto';
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
     private jwtService: JwtService,
     private prisma: PrismaService,
@@ -25,7 +31,17 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const payload = { sub: user.id, email: user.email };
+    return this.generateTokensForUser(user.id, user.email);
+  }
+
+  async generateTokensForUser(
+    userId: string,
+    userEmail: string,
+  ): Promise<{
+    access_token: string;
+    refresh_token: string;
+  }> {
+    const payload = { sub: userId, email: userEmail };
     const accessToken = await this.jwtService.signAsync(payload);
 
     // リフレッシュトークンを生成
@@ -36,7 +52,7 @@ export class AuthService {
 
     // リフレッシュトークンをDBに保存
     await this.prisma.user.update({
-      where: { id: user.id },
+      where: { id: userId },
       data: {
         refreshToken: await bcrypt.hash(refreshToken, 10),
         refreshTokenExpiresAt,
@@ -63,12 +79,15 @@ export class AuthService {
 
     let validUser: { id: string; email: string } | null = null;
     for (const user of users) {
-      if (
-        user.refreshToken &&
-        (await bcrypt.compare(refreshToken, user.refreshToken))
-      ) {
-        validUser = { id: user.id, email: user.email };
-        break;
+      if (user.refreshToken && typeof user.refreshToken === 'string') {
+        const isValid = await bcrypt.compare(
+          refreshToken,
+          user.refreshToken as string,
+        );
+        if (isValid) {
+          validUser = { id: user.id, email: user.email };
+          break;
+        }
       }
     }
 
@@ -77,27 +96,7 @@ export class AuthService {
     }
 
     // 新しいアクセストークンとリフレッシュトークンを生成
-    const payload = { sub: validUser.id, email: validUser.email };
-    const newAccessToken = await this.jwtService.signAsync(payload);
-
-    const newRefreshToken = crypto.randomBytes(64).toString('hex');
-    const newRefreshTokenExpiresAt = new Date(
-      Date.now() + 7 * 24 * 60 * 60 * 1000,
-    );
-
-    // 新しいリフレッシュトークンをDBに保存
-    await this.prisma.user.update({
-      where: { id: validUser.id },
-      data: {
-        refreshToken: await bcrypt.hash(newRefreshToken, 10),
-        refreshTokenExpiresAt: newRefreshTokenExpiresAt,
-      },
-    });
-
-    return {
-      access_token: newAccessToken,
-      refresh_token: newRefreshToken,
-    };
+    return this.generateTokensForUser(validUser.id, validUser.email);
   }
 
   async logout(userId: string): Promise<void> {

@@ -2,18 +2,35 @@ import {
   Injectable,
   ConflictException,
   NotFoundException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { AuthService } from 'src/auth/auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcript from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(forwardRef(() => AuthService))
+    private authService: AuthService,
+  ) {}
 
-  async create(createUserDto: CreateUserDto) {
-    const { email, password, nickname, sex } = createUserDto;
+  async create(createUserDto: CreateUserDto): Promise<{
+    user: {
+      id: string;
+      email: string;
+      nickname: string;
+      sex: string;
+      profileImage: string | null;
+    };
+    access_token: string;
+    refresh_token: string;
+  }> {
+    const { email, password: plainPassword, nickname, sex } = createUserDto;
 
     const existingUser = await this.prisma.user.findUnique({
       where: { email },
@@ -22,7 +39,7 @@ export class UsersService {
       throw new ConflictException('User with this email already exists');
     }
 
-    const hashedPassword = await bcript.hash(password, 10);
+    const hashedPassword = await bcript.hash(plainPassword, 10);
     const user = await this.prisma.user.create({
       data: {
         email,
@@ -32,9 +49,25 @@ export class UsersService {
       },
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password: _, ...result } = user;
-    return result;
+    // パスワードとリフレッシュトークン関連のフィールドを除外したユーザー情報
+    const userResult = {
+      id: user.id,
+      email: user.email,
+      nickname: user.nickname,
+      sex: user.sex,
+      profileImage: user.profileImage,
+    };
+
+    // トークンを生成
+    const tokens = await this.authService.generateTokensForUser(
+      user.id,
+      user.email,
+    );
+
+    return {
+      user: userResult,
+      ...tokens,
+    };
   }
 
   async findOneByEmail(email: string) {

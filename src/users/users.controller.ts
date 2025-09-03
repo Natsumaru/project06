@@ -25,15 +25,26 @@ export class UsersController {
     schema: {
       type: 'object',
       properties: {
-        id: { type: 'string', description: 'ユーザーID' },
-        email: { type: 'string', description: 'メールアドレス' },
-        nickname: { type: 'string', description: 'ニックネーム' },
-        sex: { type: 'string', enum: ['MALE', 'FEMALE'], description: '性別' },
-        profileImage: {
-          type: 'string',
-          nullable: true,
-          description: 'プロフィール画像',
+        user: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', description: 'ユーザーID' },
+            email: { type: 'string', description: 'メールアドレス' },
+            nickname: { type: 'string', description: 'ニックネーム' },
+            sex: {
+              type: 'string',
+              enum: ['MALE', 'FEMALE'],
+              description: '性別',
+            },
+            profileImage: {
+              type: 'string',
+              nullable: true,
+              description: 'プロフィール画像',
+            },
+          },
         },
+        access_token: { type: 'string', description: 'JWTアクセストークン' },
+        refresh_token: { type: 'string', description: 'リフレッシュトークン' },
       },
     },
   })
