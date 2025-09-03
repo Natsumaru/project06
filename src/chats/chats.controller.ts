@@ -29,7 +29,7 @@ export class ChatsController {
   constructor(private readonly chatsService: ChatsService) {}
 
   @ApiOperation({ summary: 'メッセージ送信' })
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT')
   @ApiParam({ name: 'roomId', description: 'チャットルームID' })
   @ApiBody({ type: CreateMessageDto })
   @ApiResponse({
@@ -79,7 +79,7 @@ export class ChatsController {
   }
 
   @ApiOperation({ summary: 'メッセージ一覧取得' })
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT')
   @ApiParam({ name: 'roomId', description: 'チャットルームID' })
   @ApiQuery({ type: FindMessagesDto })
   @ApiResponse({
@@ -171,7 +171,7 @@ export class ChatsController {
   }
 
   @ApiOperation({ summary: 'メッセージピン留めトグル' })
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT')
   @ApiParam({ name: 'messageId', description: 'メッセージID' })
   @ApiResponse({
     status: 200,
