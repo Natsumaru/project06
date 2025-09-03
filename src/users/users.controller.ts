@@ -43,7 +43,7 @@ export class UsersController {
   }
 
   @ApiOperation({ summary: 'ユーザープロフィール取得' })
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT')
   @ApiResponse({
     status: 200,
     description: 'プロフィール取得成功',
@@ -66,8 +66,6 @@ export class UsersController {
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')
   async getProfile(@GetUser() user: { id: string; email: string }) {
-    // 👈 @Request() req の代わりに変更
-    // これで user は型安全なオブジェクトとして扱える
     return this.usersService.findOneById(user.id);
   }
 }

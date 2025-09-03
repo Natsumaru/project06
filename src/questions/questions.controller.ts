@@ -50,7 +50,7 @@ export class QuestionsController {
   }
 
   @ApiOperation({ summary: 'ユーザーの回答履歴取得' })
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT')
   @ApiResponse({
     status: 200,
     description: 'ユーザー回答履歴取得成功',
@@ -92,7 +92,7 @@ export class QuestionsController {
   }
 
   @ApiOperation({ summary: '回答送信' })
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT')
   @ApiBody({ type: SubmitAnswersDto })
   @ApiResponse({
     status: 201,

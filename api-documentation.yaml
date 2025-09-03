@@ -1,0 +1,1586 @@
+openapi: 3.0.0
+paths:
+  /:
+    get:
+      operationId: AppController_getHello
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+        - App
+  /users/register:
+    post:
+      operationId: UsersController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserDto'
+      responses:
+        '201':
+          description: ユーザー登録成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: ユーザーID
+                  email:
+                    type: string
+                    description: メールアドレス
+                  nickname:
+                    type: string
+                    description: ニックネーム
+                  sex:
+                    type: string
+                    enum:
+                      - MALE
+                      - FEMALE
+                    description: 性別
+                  profileImage:
+                    type: string
+                    nullable: true
+                    description: プロフィール画像
+        '400':
+          description: バリデーションエラー
+      summary: ユーザー登録
+      tags:
+        - ユーザー
+  /users/profile:
+    get:
+      operationId: UsersController_getProfile
+      parameters: []
+      responses:
+        '200':
+          description: プロフィール取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: ユーザーID
+                  email:
+                    type: string
+                    description: メールアドレス
+                  nickname:
+                    type: string
+                    description: ニックネーム
+                  sex:
+                    type: string
+                    enum:
+                      - MALE
+                      - FEMALE
+                    description: 性別
+                  profileImage:
+                    type: string
+                    nullable: true
+                    description: プロフィール画像
+        '401':
+          description: 認証が必要
+      security:
+        - JWT: []
+      summary: ユーザープロフィール取得
+      tags:
+        - ユーザー
+  /auth/login:
+    post:
+      operationId: AuthController_signIn
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginDto'
+      responses:
+        '200':
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: JWTアクセストークン
+        '401':
+          description: 認証失敗
+      summary: ユーザーログイン
+      tags:
+        - 認証
+  /events:
+    post:
+      operationId: EventsController_create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEventDto'
+      responses:
+        '201':
+          description: イベント作成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: イベントID
+                  title:
+                    type: string
+                    description: イベントタイトル
+                  description:
+                    type: string
+                    description: イベント説明
+                  eventImage:
+                    type: string
+                    nullable: true
+                    description: イベント画像
+                  eventDatetime:
+                    type: string
+                    format: date-time
+                    description: イベント日時
+                  locationText:
+                    type: string
+                    description: 開催場所
+                  fee:
+                    type: number
+                    description: 参加費
+                  capacity:
+                    type: number
+                    description: 定員
+                  minParticipants:
+                    type: number
+                    nullable: true
+                    description: 最小参加者数
+                  status:
+                    type: string
+                    enum:
+                      - PUBLISHED
+                      - HELD
+                      - CANCELLED
+                    description: イベントステータス
+                  profileRevealPolicy:
+                    type: string
+                    enum:
+                      - OPEN
+                      - OPTIONAL
+                      - CONDITIONAL
+                    description: ユーザー間プロフィール公開ポリシー
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: 作成日時
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    description: 更新日時
+                  ownerId:
+                    type: string
+                    description: 主催者ID
+                  preJoinChatRoomId:
+                    type: string
+                    description: 参加前チャットルームID
+                  postJoinChatRoomId:
+                    type: string
+                    description: 参加後チャットルームID
+        '401':
+          description: 認証が必要
+      security:
+        - JWT: []
+      summary: イベント作成
+      tags:
+        - イベント
+    get:
+      operationId: EventsController_findAll
+      parameters:
+        - name: page
+          required: false
+          in: query
+          description: ページ番号
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: limit
+          required: false
+          in: query
+          description: 1ページあたりの件数
+          schema:
+            minimum: 1
+            default: 20
+            type: number
+        - name: startDate
+          required: false
+          in: query
+          description: 開始日時フィルター
+          schema:
+            format: date-time
+            type: string
+        - name: endDate
+          required: false
+          in: query
+          description: 終了日時フィルター
+          schema:
+            format: date-time
+            type: string
+        - description: ページ番号
+          required: false
+          name: page
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - description: 1ページあたりの件数
+          required: false
+          name: limit
+          in: query
+          schema:
+            minimum: 1
+            default: 20
+            type: number
+        - description: 開始日時フィルター
+          required: false
+          name: startDate
+          in: query
+          schema:
+            format: date-time
+            type: string
+        - description: 終了日時フィルター
+          required: false
+          name: endDate
+          in: query
+          schema:
+            format: date-time
+            type: string
+      responses:
+        '200':
+          description: イベント一覧取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: イベントID
+                        title:
+                          type: string
+                          description: イベントタイトル
+                        description:
+                          type: string
+                          description: イベント説明
+                        eventImage:
+                          type: string
+                          nullable: true
+                          description: イベント画像
+                        eventDatetime:
+                          type: string
+                          format: date-time
+                          description: イベント日時
+                        locationText:
+                          type: string
+                          description: 開催場所
+                        fee:
+                          type: number
+                          description: 参加費
+                        capacity:
+                          type: number
+                          description: 定員
+                        minParticipants:
+                          type: number
+                          nullable: true
+                          description: 最小参加者数
+                        status:
+                          type: string
+                          enum:
+                            - PUBLISHED
+                            - HELD
+                            - CANCELLED
+                          description: イベントステータス
+                        profileRevealPolicy:
+                          type: string
+                          enum:
+                            - OPEN
+                            - OPTIONAL
+                            - CONDITIONAL
+                          description: プロフィール公開ポリシー
+                        createdAt:
+                          type: string
+                          format: date-time
+                          description: 作成日時
+                        updatedAt:
+                          type: string
+                          format: date-time
+                          description: 更新日時
+                        ownerId:
+                          type: string
+                          description: 主催者ID
+                        preJoinChatRoomId:
+                          type: string
+                          nullable: true
+                          description: 参加前チャットルームID
+                        postJoinChatRoomId:
+                          type: string
+                          nullable: true
+                          description: 参加後チャットルームID
+                        owner:
+                          type: object
+                          properties:
+                            nickname:
+                              type: string
+                              description: 主催者ニックネーム
+                  total:
+                    type: number
+                    description: 総件数
+                  page:
+                    type: number
+                    description: 現在のページ
+                  lastPage:
+                    type: number
+                    description: 最後のページ
+      summary: イベント一覧取得
+      tags:
+        - イベント
+  /events/{id}:
+    get:
+      operationId: EventsController_findOne
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: イベントID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: イベント詳細取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: イベントID
+                  title:
+                    type: string
+                    description: イベントタイトル
+                  description:
+                    type: string
+                    description: イベント説明
+                  eventImage:
+                    type: string
+                    nullable: true
+                    description: イベント画像
+                  eventDatetime:
+                    type: string
+                    format: date-time
+                    description: イベント日時
+                  locationText:
+                    type: string
+                    description: 開催場所
+                  fee:
+                    type: number
+                    description: 参加費
+                  capacity:
+                    type: number
+                    description: 定員
+                  minParticipants:
+                    type: number
+                    nullable: true
+                    description: 最小参加者数
+                  status:
+                    type: string
+                    enum:
+                      - PUBLISHED
+                      - HELD
+                      - CANCELLED
+                    description: イベントステータス
+                  profileRevealPolicy:
+                    type: string
+                    enum:
+                      - OPEN
+                      - OPTIONAL
+                      - CONDITIONAL
+                    description: プロフィール公開ポリシー
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: 作成日時
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    description: 更新日時
+                  ownerId:
+                    type: string
+                    description: 主催者ID
+                  preJoinChatRoomId:
+                    type: string
+                    nullable: true
+                    description: 参加前チャットルームID
+                  postJoinChatRoomId:
+                    type: string
+                    nullable: true
+                    description: 参加後チャットルームID
+                  owner:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: 主催者ID
+                      nickname:
+                        type: string
+                        description: 主催者ニックネーム
+                      profileImage:
+                        type: string
+                        nullable: true
+                        description: プロフィール画像
+        '404':
+          description: イベントが見つかりません
+      summary: イベント詳細取得
+      tags:
+        - イベント
+    patch:
+      operationId: EventsController_update
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: イベントID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEventDto'
+            examples:
+              example1:
+                summary: イベント更新例
+                description: イベント情報を部分的に更新する例
+                value:
+                  title: Adamの飲み会（update)
+                  description: 仕事終わりにちょっと一杯どうですか？
+                  eventDatetime: '2025-07-30T18:30:00.000Z'
+                  locationText: 秘密
+                  fee: 5000
+                  capacity: 6
+                  profileRevealPolicy: OPEN
+      responses:
+        '200':
+          description: イベント更新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: イベントID
+                  title:
+                    type: string
+                    description: イベントタイトル
+                  description:
+                    type: string
+                    description: イベント説明
+                  eventImage:
+                    type: string
+                    nullable: true
+                    description: イベント画像
+                  eventDatetime:
+                    type: string
+                    format: date-time
+                    description: イベント日時
+                  locationText:
+                    type: string
+                    description: 開催場所
+                  fee:
+                    type: number
+                    description: 参加費
+                  capacity:
+                    type: number
+                    description: 定員
+                  minParticipants:
+                    type: number
+                    nullable: true
+                    description: 最小参加者数
+                  status:
+                    type: string
+                    enum:
+                      - PUBLISHED
+                      - HELD
+                      - CANCELLED
+                    description: イベントステータス
+                  profileRevealPolicy:
+                    type: string
+                    enum:
+                      - OPEN
+                      - OPTIONAL
+                      - CONDITIONAL
+                    description: プロフィール公開ポリシー
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: 作成日時
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    description: 更新日時
+                  ownerId:
+                    type: string
+                    description: 主催者ID
+        '401':
+          description: 認証が必要
+        '403':
+          description: 更新権限がありません
+        '404':
+          description: イベントが見つかりません
+      security:
+        - JWT: []
+      summary: イベント更新
+      tags:
+        - イベント
+    delete:
+      operationId: EventsController_remove
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: イベントID
+          schema:
+            type: string
+      responses:
+        '204':
+          description: イベント削除成功
+        '401':
+          description: 認証が必要
+        '403':
+          description: 削除権限がありません
+        '404':
+          description: イベントが見つかりません
+      security:
+        - JWT: []
+      summary: イベント削除
+      tags:
+        - イベント
+  /events/{id}/join:
+    post:
+      operationId: EventsController_join
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: イベントID
+          schema:
+            type: string
+      responses:
+        '201':
+          description: イベント参加成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  paymentStatus:
+                    type: string
+                    enum:
+                      - UNPAID
+                      - PAID
+                      - REFUNDED
+                    description: 参加ID
+                  eventId:
+                    type: string
+                    description: イベントID
+                  userId:
+                    type: string
+                    description: ユーザーID
+                  joinedAt:
+                    type: string
+                    format: date-time
+                    description: 参加日時
+        '401':
+          description: 認証が必要
+        '404':
+          description: イベントが見つかりません
+        '409':
+          description: 既に参加済み、または定員に達しています
+      security:
+        - JWT: []
+      summary: イベント参加
+      tags:
+        - イベント
+  /questions:
+    get:
+      operationId: QuestionsController_findAll
+      parameters: []
+      responses:
+        '200':
+          description: 質問一覧取得成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: 質問ID
+                    text:
+                      type: string
+                      description: 質問文
+                    order:
+                      type: number
+                      description: 質問の順序
+                    choices:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            description: 選択肢ID
+                          text:
+                            type: string
+                            description: 選択肢テキスト
+                          questionId:
+                            type: string
+                            description: 質問ID
+      summary: 質問一覧取得
+      tags:
+        - 質問
+  /questions/my-answers:
+    get:
+      operationId: QuestionsController_findMyAnswers
+      parameters: []
+      responses:
+        '200':
+          description: ユーザー回答履歴取得成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: 回答ID
+                    userId:
+                      type: string
+                      description: ユーザーID
+                    questionId:
+                      type: string
+                      description: 質問ID
+                    choiceId:
+                      type: string
+                      description: 選択された選択肢ID
+                    createdAt:
+                      type: string
+                      format: date-time
+                      description: 回答作成日時
+                    question:
+                      type: object
+                      properties:
+                        text:
+                          type: string
+                          description: 質問文
+                    choice:
+                      type: object
+                      properties:
+                        text:
+                          type: string
+                          description: 選択肢テキスト
+        '401':
+          description: 認証が必要
+      security:
+        - JWT: []
+      summary: ユーザーの回答履歴取得
+      tags:
+        - 質問
+  /questions/submit:
+    post:
+      operationId: QuestionsController_submit
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitAnswersDto'
+      responses:
+        '201':
+          description: 回答送信成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: 回答ID
+                    userId:
+                      type: string
+                      description: ユーザーID
+                    questionId:
+                      type: string
+                      description: 質問ID
+                    choiceId:
+                      type: string
+                      description: 選択された選択肢ID
+                    createdAt:
+                      type: string
+                      format: date-time
+                      description: 回答作成日時
+        '400':
+          description: バリデーションエラー
+        '401':
+          description: 認証が必要
+      security:
+        - JWT: []
+      summary: 回答送信
+      tags:
+        - 質問
+  /chats/{roomId}/messages:
+    post:
+      operationId: ChatsController_createMessage
+      parameters:
+        - name: roomId
+          required: true
+          in: path
+          description: チャットルームID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMessageDto'
+      responses:
+        '201':
+          description: メッセージ送信成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: メッセージID
+                  message:
+                    type: string
+                    description: メッセージ内容
+                  isAnnouncement:
+                    type: boolean
+                    description: アナウンスメッセージか
+                  sentAt:
+                    type: string
+                    format: date-time
+                    description: 送信日時
+                  roomId:
+                    type: string
+                    description: チャットルームID
+                  senderId:
+                    type: string
+                    description: 送信者ID
+                  sender:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: 送信者ID
+                      nickname:
+                        type: string
+                        description: 送信者ニックネーム
+                      profileImage:
+                        type: string
+                        nullable: true
+                        description: プロフィール画像
+                      isOwner:
+                        type: boolean
+                        description: イベントオーナーか
+        '401':
+          description: 認証が必要
+        '404':
+          description: チャットルームが見つかりません
+      security:
+        - JWT: []
+      summary: メッセージ送信
+      tags:
+        - チャット
+    get:
+      operationId: ChatsController_findMessages
+      parameters:
+        - name: roomId
+          required: true
+          in: path
+          description: チャットルームID
+          schema:
+            type: string
+        - name: limit
+          required: false
+          in: query
+          description: 取得件数（1-100）
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            example: 20
+            type: number
+        - name: offset
+          required: false
+          in: query
+          description: オフセット（0以上）
+          schema:
+            minimum: 0
+            default: 0
+            example: 0
+            type: number
+        - name: startDate
+          required: false
+          in: query
+          description: 開始日時（ISO 8601形式）
+          schema:
+            format: date-time
+            example: '2025-01-01T00:00:00Z'
+            type: string
+        - name: endDate
+          required: false
+          in: query
+          description: 終了日時（ISO 8601形式）
+          schema:
+            format: date-time
+            example: '2025-12-31T23:59:59Z'
+            type: string
+        - name: cursor
+          required: false
+          in: query
+          description: カーソルベースページネーション用（メッセージID）
+          schema:
+            example: message-id-12345
+            type: string
+        - description: 取得件数（1-100）
+          required: false
+          name: limit
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            example: 20
+            type: number
+        - description: オフセット（0以上）
+          required: false
+          name: offset
+          in: query
+          schema:
+            minimum: 0
+            default: 0
+            example: 0
+            type: number
+        - description: 開始日時（ISO 8601形式）
+          required: false
+          name: startDate
+          in: query
+          schema:
+            format: date-time
+            example: '2025-01-01T00:00:00Z'
+            type: string
+        - description: 終了日時（ISO 8601形式）
+          required: false
+          name: endDate
+          in: query
+          schema:
+            format: date-time
+            example: '2025-12-31T23:59:59Z'
+            type: string
+        - description: カーソルベースページネーション用（メッセージID）
+          required: false
+          name: cursor
+          in: query
+          schema:
+            example: message-id-12345
+            type: string
+      responses:
+        '200':
+          description: メッセージ一覧取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: メッセージID
+                        message:
+                          type: string
+                          description: メッセージ内容
+                        isAnnouncement:
+                          type: boolean
+                          description: アナウンスメッセージか
+                        sentAt:
+                          type: string
+                          format: date-time
+                          description: 送信日時
+                        roomId:
+                          type: string
+                          description: チャットルームID
+                        senderId:
+                          type: string
+                          description: 送信者ID（匿名ユーザーの場合は含まれない）
+                          nullable: true
+                        isPinned:
+                          type: boolean
+                          description: ピン留めされているか
+                        isMyMessage:
+                          type: boolean
+                          description: 自分のメッセージか
+                        sender:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              description: 送信者ID（匿名の場合は"anonymous"）
+                            nickname:
+                              type: string
+                              description: 送信者ニックネーム
+                            profileImage:
+                              type: string
+                              nullable: true
+                              description: プロフィール画像
+                            isOwner:
+                              type: boolean
+                              description: イベントオーナーか
+                  pagination:
+                    type: object
+                    properties:
+                      hasMore:
+                        type: boolean
+                        description: 次のページがあるか
+                      nextCursor:
+                        type: string
+                        nullable: true
+                        description: 次のページのカーソル
+                      limit:
+                        type: number
+                        description: 1ページあたりの件数
+                      offset:
+                        type: number
+                        description: オフセット
+        '401':
+          description: 認証が必要
+        '404':
+          description: チャットルームが見つかりません
+      security:
+        - JWT: []
+      summary: メッセージ一覧取得
+      tags:
+        - チャット
+  /chats/message/{messageId}/pin:
+    post:
+      operationId: ChatsController_togglePin
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: メッセージID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ピン留め状態変更成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: メッセージID
+                  message:
+                    type: string
+                    description: メッセージ内容
+                  isAnnouncement:
+                    type: boolean
+                    description: アナウンスメッセージか
+                  isPinned:
+                    type: boolean
+                    description: ピン留めされているか
+                  sentAt:
+                    type: string
+                    format: date-time
+                    description: 送信日時
+                  roomId:
+                    type: string
+                    description: チャットルームID
+                  senderId:
+                    type: string
+                    description: 送信者ID
+        '401':
+          description: 認証が必要
+        '403':
+          description: ピン留め権限がありません
+        '404':
+          description: メッセージが見つかりません
+      security:
+        - JWT: []
+      summary: メッセージピン留めトグル
+      tags:
+        - チャット
+  /dms:
+    post:
+      description: 指定されたユーザーとのDMルームを検索し、存在しない場合は新規作成します。
+      operationId: DmsController_findOrCreateDmRoom
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDmDto'
+      responses:
+        '200':
+          description: DMルーム取得成功（既存ルーム）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: チャットルームID
+                  roomType:
+                    type: string
+                    enum:
+                      - DM
+                    description: ルームタイプ
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: 作成日時
+        '201':
+          description: DMルーム作成成功（新規ルーム）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: チャットルームID
+                  roomType:
+                    type: string
+                    enum:
+                      - DM
+                    description: ルームタイプ
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: 作成日時
+        '400':
+          description: 不正なリクエスト（自分自身とのDM作成など）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                    example: 400
+                  message:
+                    type: string
+                    example: You cannot create a DM with yourself.
+                  error:
+                    type: string
+                    example: Bad Request
+        '401':
+          description: 認証が必要
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                    example: 401
+                  message:
+                    type: string
+                    example: Unauthorized
+      security:
+        - JWT: []
+      summary: DMルームの検索または作成
+      tags:
+        - ダイレクトメッセージ
+    get:
+      description: 自分が参加しているすべてのDMルームの一覧を取得します。各DMの最新メッセージも含まれます。
+      operationId: DmsController_findMyDmRooms
+      parameters: []
+      responses:
+        '200':
+          description: DM一覧取得成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: DMルームID
+                    roomType:
+                      type: string
+                      enum:
+                        - DM
+                      description: ルームタイプ
+                    createdAt:
+                      type: string
+                      format: date-time
+                      description: ルーム作成日時
+                    participants:
+                      type: array
+                      description: DMの参加者（相手とあなた）
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            description: ユーザーID
+                          nickname:
+                            type: string
+                            description: ニックネーム
+                          profileImage:
+                            type: string
+                            nullable: true
+                            description: プロフィール画像
+                    messages:
+                      type: array
+                      description: 最新のメッセージ（1件）
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            description: メッセージID
+                          message:
+                            type: string
+                            description: メッセージ内容
+                          isAnnouncement:
+                            type: boolean
+                            description: アナウンスメッセージか
+                          isPinned:
+                            type: boolean
+                            description: ピン留めされているか
+                          sentAt:
+                            type: string
+                            format: date-time
+                            description: メッセージ送信日時
+                          sender:
+                            type: object
+                            nullable: true
+                            properties:
+                              id:
+                                type: string
+                                description: 送信者ID
+                              nickname:
+                                type: string
+                                description: 送信者ニックネーム
+        '401':
+          description: 認証が必要
+      security:
+        - JWT: []
+      summary: 自分が参加しているDM一覧取得
+      tags:
+        - ダイレクトメッセージ
+  /dms/{roomId}/messages:
+    get:
+      description: DMルーム内のメッセージ履歴をページネーション付きで取得します。最新のメッセージから古いメッセージの順で返されます。
+      operationId: DmsController_findDmMessages
+      parameters:
+        - name: roomId
+          required: true
+          in: path
+          description: DMルームID
+          schema:
+            example: clm1234567890abcdef
+            type: string
+        - name: cursor
+          required: false
+          in: query
+          description: ページネーション用のカーソル（メッセージID）
+          schema:
+            example: msg_123456789
+            type: string
+        - name: limit
+          required: false
+          in: query
+          description: 1ページあたりの取得件数（1-100）
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            example: 20
+            type: number
+      responses:
+        '200':
+          description: メッセージ履歴取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: メッセージID
+                        message:
+                          type: string
+                          description: メッセージ内容
+                        isAnnouncement:
+                          type: boolean
+                          description: アナウンスメッセージか
+                        isPinned:
+                          type: boolean
+                          description: ピン留めされているか
+                        sentAt:
+                          type: string
+                          format: date-time
+                          description: 送信日時
+                        sender:
+                          type: object
+                          nullable: true
+                          properties:
+                            id:
+                              type: string
+                              description: 送信者ID
+                            nickname:
+                              type: string
+                              description: 送信者ニックネーム
+                            profileImage:
+                              type: string
+                              nullable: true
+                              description: プロフィール画像
+                  pagination:
+                    type: object
+                    properties:
+                      hasMore:
+                        type: boolean
+                        description: 次のページがあるか
+                      nextCursor:
+                        type: string
+                        nullable: true
+                        description: 次のページ取得用カーソル（メッセージID）
+                      limit:
+                        type: number
+                        description: 1ページあたりの件数
+        '401':
+          description: 認証が必要
+        '404':
+          description: DMルームが見つからない、または参加者ではない
+      security:
+        - JWT: []
+      summary: 特定のDMルームのメッセージ履歴取得
+      tags:
+        - ダイレクトメッセージ
+    post:
+      description: 指定されたDMルームにメッセージを送信します。
+      operationId: DmsController_sendDmMessage
+      parameters:
+        - name: roomId
+          required: true
+          in: path
+          description: DMルームID
+          schema:
+            example: clm1234567890abcdef
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendDmMessageDto'
+      responses:
+        '201':
+          description: メッセージ送信成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: メッセージID
+                  message:
+                    type: string
+                    description: メッセージ内容
+                  isAnnouncement:
+                    type: boolean
+                    description: アナウンスメッセージか
+                  isPinned:
+                    type: boolean
+                    description: ピン留めされているか
+                  sentAt:
+                    type: string
+                    format: date-time
+                    description: 送信日時
+                  roomId:
+                    type: string
+                    description: DMルームID
+                  senderId:
+                    type: string
+                    description: 送信者ID
+                  sender:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: 送信者ID
+                      nickname:
+                        type: string
+                        description: 送信者ニックネーム
+                      profileImage:
+                        type: string
+                        nullable: true
+                        description: プロフィール画像
+        '400':
+          description: バリデーションエラー
+        '401':
+          description: 認証が必要
+        '404':
+          description: DMルームが見つからない、または参加者ではない
+      security:
+        - JWT: []
+      summary: DMにメッセージ送信
+      tags:
+        - ダイレクトメッセージ
+info:
+  title: Project06 API
+  description: API documentation for Project06
+  version: '1.0'
+  contact: {}
+tags: []
+servers: []
+components:
+  securitySchemes:
+    JWT:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http
+      description: JWTトークンを入力してください
+  schemas:
+    CreateUserDto:
+      type: object
+      properties:
+        email:
+          type: string
+          description: メールアドレス
+          example: user@example.com
+        password:
+          type: string
+          description: パスワード
+          example: password123
+          minLength: 8
+        nickname:
+          type: string
+          description: ニックネーム
+          example: 太郎
+        sex:
+          type: string
+          description: 性別
+          enum:
+            - MALE
+            - FEMALE
+          example: MALE
+      required:
+        - email
+        - password
+        - nickname
+        - sex
+    LoginDto:
+      type: object
+      properties:
+        email:
+          type: string
+          description: メールアドレス
+          example: adam@example.com
+        password:
+          type: string
+          description: パスワード
+          example: AdamPassword
+          minLength: 8
+      required:
+        - email
+        - password
+    CreateEventDto:
+      type: object
+      properties:
+        title:
+          type: string
+          description: イベントタイトル
+          example: Adamの飲み会（匿名確認）
+        description:
+          type: string
+          description: イベント説明
+          example: 仕事終わりにちょっと一杯どうですか？
+        eventDatetime:
+          type: string
+          description: イベント日時
+          example: '2025-08-04T18:30:00.000Z'
+        locationText:
+          type: string
+          description: 開催場所
+          example: 東京
+        fee:
+          type: number
+          description: 参加費
+          example: 5000
+        capacity:
+          type: number
+          description: 定員
+          example: 6
+        minParticipants:
+          type: number
+          description: 最小参加者数
+          example: 3
+        profileRevealPolicy:
+          type: string
+          description: プロフィール公開ポリシー
+          enum:
+            - OPEN
+            - OPTIONAL
+            - CONDITIONAL
+          example: OPEN
+      required:
+        - title
+        - description
+        - eventDatetime
+        - locationText
+        - fee
+        - capacity
+        - profileRevealPolicy
+    UpdateEventDto:
+      type: object
+      properties:
+        title:
+          type: string
+          description: イベントタイトル
+          example: Adamの飲み会（update)
+        description:
+          type: string
+          description: イベント説明
+          example: 仕事終わりにちょっと一杯どうですか？
+        eventDatetime:
+          type: string
+          description: イベント日時
+          example: '2025-07-30T18:30:00.000Z'
+        locationText:
+          type: string
+          description: 開催場所
+          example: 秘密
+        fee:
+          type: number
+          description: 参加費
+          example: 5000
+        capacity:
+          type: number
+          description: 定員
+          example: 6
+        minParticipants:
+          type: number
+          description: 最小参加者数
+          example: 3
+        profileRevealPolicy:
+          type: string
+          description: プロフィール公開ポリシー
+          enum:
+            - OPEN
+            - OPTIONAL
+            - CONDITIONAL
+          example: OPEN
+    AnswerDto:
+      type: object
+      properties:
+        questionId:
+          type: string
+          description: 質問ID
+          example: cmdon604t0000p9ocnctbnmqk
+        choiceId:
+          type: string
+          description: 選択肢ID
+          example: cmdon604t0001p9oc26n15xht
+      required:
+        - questionId
+        - choiceId
+    SubmitAnswersDto:
+      type: object
+      properties:
+        answers:
+          description: 回答配列
+          example:
+            - questionId: cmdon604t0000p9ocnctbnmqk
+              choiceId: cmdon604t0001p9oc26n15xht
+            - questionId: cmdon604x0003p9ocrxopugre
+              choiceId: cmdon604x0004p9oc54keeyxx
+          type: array
+          items:
+            $ref: '#/components/schemas/AnswerDto'
+      required:
+        - answers
+    CreateMessageDto:
+      type: object
+      properties:
+        message:
+          type: string
+          description: メッセージ内容
+          example: こんにちは！
+      required:
+        - message
+    CreateDmDto:
+      type: object
+      properties:
+        recipientId:
+          type: string
+          description: 受信者のユーザーID
+          example: cmduaq13s0002p991xq07auqv
+      required:
+        - recipientId
+    SendDmMessageDto:
+      type: object
+      properties:
+        message:
+          type: string
+          description: 送信するメッセージ内容
+          example: こんにちは！元気ですか？
+          maxLength: 2000
+      required:
+        - message
