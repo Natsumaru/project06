@@ -24,6 +24,8 @@ services:
       - minio
     networks:
       - backend-network
+    ports:
+      - "3000:3000"
 
   # 2. データベース用コンテナ
   db:
