@@ -17,7 +17,7 @@ services:
       MINIO_PORT: 9000
       MINIO_ACCESS_KEY: root_user
       MINIO_SECRET_KEY: root_password
-      MINIO_BUCKET_NAME: nest-bucket 
+      MINIO_BUCKET_NAME: nest-bucket
     # dbサービスが起動してからappを起動する
     depends_on:
       - db
@@ -25,7 +25,8 @@ services:
     networks:
       - backend-network
     ports:
-      - "3000:3000"
+      - '3000:3000'
+      - '5555:5555'
 
   # 2. データベース用コンテナ
   db:
@@ -44,7 +45,7 @@ services:
     image: minio/minio
     ports:
       # Webコンソール用のポート (ブラウザでアクセス)
-      - "9001:9001"
+      - '9001:9001'
     environment:
       - MINIO_ROOT_USER=root_user
       - MINIO_ROOT_PASSWORD=root_password
