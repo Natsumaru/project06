@@ -84,6 +84,10 @@ model User {
   stripeCustomerId String?
   stripeAccountId  String?
 
+  // リフレッシュトークン
+  refreshToken String?
+  refreshTokenExpiresAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
